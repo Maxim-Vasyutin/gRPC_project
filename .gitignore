@@ -36,3 +36,7 @@ temp/
 
 # Docker local overrides
 docker-compose.override.yml
+
+
+PROJECT_CONTEXT.md
+CURRENT_TASK.md

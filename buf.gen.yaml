@@ -1,12 +1,12 @@
 version: v2
 
 plugins:
-  - local: C:\dev\sdk\go\go1.20.4\bin\bin\protoc-gen-go.exe
+  - local: protoc-gen-go
     out: generated
     opt:
       - paths=source_relative
 
-  - local: C:\dev\sdk\go\go1.20.4\bin\bin\protoc-gen-go-grpc.exe
+  - local: protoc-gen-go-grpc
     out: generated
     opt:
       - paths=source_relative

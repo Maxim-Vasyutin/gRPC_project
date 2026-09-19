@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "gRPC_project/generated/user/v1;userv1";
+
+import "google/protobuf/empty.proto";
+import "buf/validate/validate.proto";
+
+service UserService {
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Refresh(RefreshRequest) returns (RefreshResponse);
+    rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
+}
+
+//Register
+message RegisterRequest {
+  string email = 1 [(buf.validate.field).string.email = true];
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 64
+  ];
+}
+message RegisterResponse {
+  string user_id = 1 [(buf.validate.field).string.uuid = true];
+}
+//
+
+//Login
+message LoginRequest {
+  //Поставил те же правила, чтобы не перегружать. 
+  //Тут подойдёт просто проверка на "ненулёвость"
+  string email = 1 [(buf.validate.field).string.email = true];
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 64
+  ];
+}
+
+message LoginResponse {
+  string access_token = 1 [(buf.validate.field).string.min_len = 8]; 
+  string refresh_token = 2 [(buf.validate.field).string.min_len = 8];
+}
+
+//
+
+//Refresh
+message RefreshRequest {}
+
+message RefreshResponse {
+  string access_token = 1 [(buf.validate.field).string.min_len = 8]; //new
+  string refresh_token = 2 [(buf.validate.field).string.min_len = 8]; //new
+}
+
+//
+
+//Logout
+message LogoutRequest {}

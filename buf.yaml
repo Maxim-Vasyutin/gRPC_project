@@ -1,0 +1,18 @@
+version: v2
+
+modules:
+  - path: proto
+
+deps:
+  - buf.build/bufbuild/protovalidate
+
+lint:
+  use:
+    - STANDARD
+  except:
+  #Выключаем стандартный нейминг для ответа rpc
+    - RPC_RESPONSE_STANDARD_NAME
+
+breaking:
+  use:
+    - FILE
