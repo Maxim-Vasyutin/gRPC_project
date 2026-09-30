@@ -12,3 +12,7 @@ type UserRepository interface {
 type PasswordHasher interface {
 	Hash(password string) (string, error)
 }
+
+type IDGenerator interface {
+	NewID() string
+}
