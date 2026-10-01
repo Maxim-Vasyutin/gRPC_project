@@ -29,7 +29,7 @@ func TestRegister_RepositoryCheckError(t *testing.T) {
 	hasher := &fakePasswordHasher{}
 	idGenerator := &fakeIDGenerator{}
 
-	//act - 
+	//act -
 	useCase := NewRegisterUseCase(repo, hasher, idGenerator)
 
 	ctx := context.Background()
@@ -69,10 +69,20 @@ func (ur *fakeUserRepository) Save(ctx context.Context, user User) error {
 	return nil
 }
 
+func (ur *fakeUserRepository) GetByEmail(
+	ctx context.Context,
+	email string,
+) (User, error) {
+	return User{}, nil
+}
+
 // fakePasswordHasher
 func (h *fakePasswordHasher) Hash(password string) (string, error) {
 	h.called = true
 	return "hash", nil
+}
+func (h *fakePasswordHasher) Verify(password, hash string) error {
+	return nil
 }
 
 // fakeIDGenerator

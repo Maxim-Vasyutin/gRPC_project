@@ -18,12 +18,12 @@ type RegisterOutput struct {
 }
 
 type RegisterUseCase struct {
-	repo        UserRepository
-	hasher      PasswordHasher
+	repo        RegisterUserRepository
+	hasher      PasswordService
 	idGenerator IDGenerator
 }
 
-func NewRegisterUseCase(repo UserRepository, hash PasswordHasher, id IDGenerator) RegisterUseCase {
+func NewRegisterUseCase(repo RegisterUserRepository, hash PasswordService, id IDGenerator) RegisterUseCase {
 	return RegisterUseCase{
 		repo:        repo,
 		hasher:      hash,
