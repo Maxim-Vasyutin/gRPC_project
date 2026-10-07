@@ -53,7 +53,8 @@ message RefreshResponse {
   string refresh_token = 2 [(buf.validate.field).string.min_len = 8]; //new
 }
 
-//
+// ограничение сверху(64) по токенам добавить. минимальный пересмотреть
+//Уточнить методы (к бизнесу ближе)
 
 //Logout
 message LogoutRequest {}

@@ -1,9 +1,12 @@
-package core
+package application
 
 import (
 	"context"
 	"errors"
 	"testing"
+
+	"gRPC_project/user-service/internal/application/dto"
+	"gRPC_project/user-service/internal/core"
 )
 
 type fakeUserRepository struct {
@@ -35,7 +38,7 @@ func TestRegister_RepositoryCheckError(t *testing.T) {
 	ctx := context.Background()
 
 	//assert
-	_, err := useCase.Register(ctx, RegisterInput{
+	_, err := useCase.Register(ctx, dto.RegisterInput{
 		Email:    "test@mail.com",
 		Password: "12344321",
 	})
@@ -63,7 +66,7 @@ func (ur *fakeUserRepository) ExistsByEmail(ctx context.Context, email string) (
 	return false, ur.existsErr
 }
 
-func (ur *fakeUserRepository) Save(ctx context.Context, user User) error {
+func (ur *fakeUserRepository) Save(ctx context.Context, user core.User) error {
 
 	ur.saveCalled = true
 	return nil
@@ -72,8 +75,8 @@ func (ur *fakeUserRepository) Save(ctx context.Context, user User) error {
 func (ur *fakeUserRepository) GetByEmail(
 	ctx context.Context,
 	email string,
-) (User, error) {
-	return User{}, nil
+) (core.User, error) {
+	return core.User{}, nil
 }
 
 // fakePasswordHasher

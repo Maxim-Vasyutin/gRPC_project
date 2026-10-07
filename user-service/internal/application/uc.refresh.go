@@ -1,27 +1,22 @@
-package core
+package application
 
 import (
 	"context"
 	"fmt"
+
+	"gRPC_project/user-service/internal/application/dto"
+	"gRPC_project/user-service/internal/application/ports/outbound"
+	"gRPC_project/user-service/internal/core"
 )
 
-type RefreshInput struct {
-	RefreshToken string
-}
-
-type RefreshOutput struct {
-	AccessToken  string
-	RefreshToken string
-}
-
 type RefreshUseCase struct {
-	sessionRepo SessionRepository
-	tokenIssuer TokenIssuer
+	sessionRepo outbound.SessionRepository
+	tokenIssuer outbound.TokenIssuer
 }
 
 func NewRefreshUseCase(
-	session SessionRepository,
-	tokenIssuer TokenIssuer,
+	session outbound.SessionRepository,
+	tokenIssuer outbound.TokenIssuer,
 ) RefreshUseCase {
 	return RefreshUseCase{
 		sessionRepo: session,
@@ -29,21 +24,21 @@ func NewRefreshUseCase(
 	}
 }
 
-func (uc *RefreshUseCase) Refresh(ctx context.Context, input RefreshInput) (RefreshOutput, error) {
+func (uc *RefreshUseCase) Refresh(ctx context.Context, input dto.RefreshInput) (dto.RefreshOutput, error) {
 	//Нахожу старую сессию
 	oldSession, err := uc.sessionRepo.FindByRefreshToken(ctx, input.RefreshToken)
 	if err != nil {
-		return RefreshOutput{}, fmt.Errorf("find refresh session: %w", err)
+		return dto.RefreshOutput{}, fmt.Errorf("find refresh session: %w", err)
 	}
 
 	//Выпускаю новые токены
 	tokens, err := uc.tokenIssuer.Issue(oldSession.UserID)
 	if err != nil {
-		return RefreshOutput{}, fmt.Errorf("issue tokens: %w", err)
+		return dto.RefreshOutput{}, fmt.Errorf("issue tokens: %w", err)
 	}
 
 	//Собираю новую сессию
-	newsession := Session{
+	newsession := core.Session{
 		UserID:       oldSession.UserID,
 		RefreshToken: tokens.RefreshToken,
 	}
@@ -51,11 +46,11 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, input RefreshInput) (Refr
 	//Заменяю старую сессию
 	err = uc.sessionRepo.Replace(ctx, input.RefreshToken, newsession)
 	if err != nil {
-		return RefreshOutput{}, fmt.Errorf("replace refresh session: %w", err)
+		return dto.RefreshOutput{}, fmt.Errorf("replace refresh session: %w", err)
 	}
 
 	//Возвращаю новую пару токенов
-	return RefreshOutput{
+	return dto.RefreshOutput{
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
 	}, nil

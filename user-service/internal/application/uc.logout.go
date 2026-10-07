@@ -1,27 +1,26 @@
-package core
+package application
 
 import (
 	"context"
 	"fmt"
+
+	"gRPC_project/user-service/internal/application/dto"
+	"gRPC_project/user-service/internal/application/ports/outbound"
 )
 
-type LogoutInput struct {
-	RefreshToken string
-}
-
 type LogoutUseCase struct {
-	sessionRepo SessionRepository
+	sessionRepo outbound.SessionRepository
 }
 
 func NewLogoutUseCase(
-	sessionRepo SessionRepository,
+	sessionRepo outbound.SessionRepository,
 ) LogoutUseCase {
 	return LogoutUseCase{
 		sessionRepo: sessionRepo,
 	}
 }
 
-func (uc *LogoutUseCase) Logout(ctx context.Context, input LogoutInput) error {
+func (uc *LogoutUseCase) Logout(ctx context.Context, input dto.LogoutInput) error {
 	//Можно отдельно найти сессию, если нужно.
 	//Метод Revoke и так её ищет дальше
 	/*
