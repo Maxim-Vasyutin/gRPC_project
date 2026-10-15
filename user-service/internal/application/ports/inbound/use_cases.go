@@ -3,7 +3,7 @@ package inbound
 import (
 	"context"
 
-	"gRPC_project/user-service/internal/application/dto"
+	"user-service/internal/application/dto"
 )
 
 type Register interface {

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"gRPC_project/user-service/internal/application/dto"
-	"gRPC_project/user-service/internal/core"
+	"user-service/internal/application/dto"
+	"user-service/internal/core"
 )
 
 type fakeUserRepository struct {

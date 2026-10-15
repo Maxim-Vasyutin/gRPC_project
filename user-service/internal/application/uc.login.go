@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"gRPC_project/user-service/internal/application/dto"
-	"gRPC_project/user-service/internal/application/ports/outbound"
-	"gRPC_project/user-service/internal/core"
+	"user-service/internal/application/dto"
+	"user-service/internal/application/ports/outbound"
+	"user-service/internal/core"
 )
 
 type LoginUseCase struct {

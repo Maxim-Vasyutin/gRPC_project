@@ -3,8 +3,8 @@ package outbound
 import (
 	"context"
 
-	"gRPC_project/user-service/internal/application/dto"
-	"gRPC_project/user-service/internal/core"
+	"user-service/internal/application/dto"
+	"user-service/internal/core"
 )
 
 type RegisterUserRepository interface {

@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: grpc_user_postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users
+    ports: 
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
