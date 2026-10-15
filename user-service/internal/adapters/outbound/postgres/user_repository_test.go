@@ -49,9 +49,26 @@ func TestPostgresUserRepository_SaveAndGetByEmail(t *testing.T) {
 		_, _ = pool.Exec(ctx, `DELETE FROM users WHERE email = $1`, user.Email)
 	}()
 
+	exists, err := repo.ExistsByEmail(ctx, user.Email)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exists {
+		t.Fatal("got true, want false")
+	}
+
 	//сохраняем пользователя, которого создали выше
 	if err = repo.Save(ctx, user); err != nil {
 		t.Fatal(err)
+	}
+
+	exists, err = repo.ExistsByEmail(ctx, user.Email)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !exists {
+		t.Fatal("got false, want true")
 	}
 
 	//Проверяем, получилось ли создать пользователя. Запрашиваем его назад

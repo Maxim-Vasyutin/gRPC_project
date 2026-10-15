@@ -19,7 +19,7 @@ func NewPostgresUserRepository(pool *pgxpool.Pool) PostgresUserRepository {
 
 func (r PostgresUserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	query := `
-	SELECT EXSISTS (
+	SELECT EXISTS (
 		SELECT 1
 		FROM users
 		WHERE email = $1

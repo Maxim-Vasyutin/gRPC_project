@@ -378,7 +378,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12<\n" +
 	"\aRefresh\x12\x17.user.v1.RefreshRequest\x1a\x18.user.v1.RefreshResponse\x128\n" +
-	"\x06Logout\x12\x16.user.v1.LogoutRequest\x1a\x16.google.protobuf.EmptyB'Z%gRPC_project/generated/user/v1;userv1b\x06proto3"
+	"\x06Logout\x12\x16.user.v1.LogoutRequest\x1a\x16.google.protobuf.EmptyB1Z/gRPC_project/contracts/generated/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
