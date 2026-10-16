@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"user-service/internal/application/dto"
-	"user-service/internal/application/ports/outbound"
+	"user-service/internal/core/dto"
+	"user-service/internal/core/ports/outbound"
 )
 
 type LogoutUseCase struct {

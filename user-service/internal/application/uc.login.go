@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"user-service/internal/application/dto"
-	"user-service/internal/application/ports/outbound"
-	"user-service/internal/core"
+	"user-service/internal/core/corerrors"
+	"user-service/internal/core/domain"
+	"user-service/internal/core/dto"
+	"user-service/internal/core/ports/outbound"
 )
 
 type LoginUseCase struct {
@@ -40,7 +41,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 	//Верификация введёного пароля и сохраннного хэша
 	err = uc.hasher.Verify(input.Password, user.PasswordHash)
 	if err != nil {
-		return dto.LoginOutput{}, ErrInvalidCredentials
+		return dto.LoginOutput{}, corerrors.ErrInvalidCredentials
 	}
 
 	//Присваивание токена сессии и рефреш-токена
@@ -50,7 +51,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 	}
 
 	//создание сессии
-	session := core.Session{
+	session := domain.Session{
 		UserID:       user.ID,
 		RefreshToken: tokens.RefreshToken,
 	}

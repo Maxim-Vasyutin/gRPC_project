@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"testing"
-	"user-service/internal/core"
+	"user-service/internal/core/domain"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,7 +28,7 @@ func TestPostgresUserRepository_SaveAndGetByEmail(t *testing.T) {
 	repo := NewPostgresUserRepository(pool)
 
 	//создаём тестового пользователя
-	user := core.User{
+	user := domain.User{
 		ID:           "550e8400-e29b-41d4-a716-446655440000",
 		Email:        "test@example.com",
 		PasswordHash: "some-hash",

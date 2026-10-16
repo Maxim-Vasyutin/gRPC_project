@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"user-service/internal/application/dto"
-	"user-service/internal/application/ports/outbound"
-	"user-service/internal/core"
+	"user-service/internal/core/domain"
+	"user-service/internal/core/dto"
+	"user-service/internal/core/ports/outbound"
 )
 
 type RefreshUseCase struct {
@@ -38,7 +38,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, input dto.RefreshInput) (
 	}
 
 	//Собираю новую сессию
-	newsession := core.Session{
+	newsession := domain.Session{
 		UserID:       oldSession.UserID,
 		RefreshToken: tokens.RefreshToken,
 	}

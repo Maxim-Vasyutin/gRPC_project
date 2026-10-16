@@ -3,7 +3,7 @@ package inbound
 import (
 	"context"
 
-	"user-service/internal/application/dto"
+	"user-service/internal/core/dto"
 )
 
 type Register interface {

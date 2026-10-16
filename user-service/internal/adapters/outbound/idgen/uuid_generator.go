@@ -1,7 +1,7 @@
 package idgen
 
 import (
-	"user-service/internal/application/ports/outbound"
+	"user-service/internal/core/ports/outbound"
 
 	"github.com/google/uuid"
 )

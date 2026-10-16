@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"user-service/internal/application/dto"
-	"user-service/internal/core"
+	"user-service/internal/core/domain"
+	"user-service/internal/core/dto"
 )
 
 type fakeUserRepository struct {
@@ -66,7 +66,7 @@ func (ur *fakeUserRepository) ExistsByEmail(ctx context.Context, email string) (
 	return false, ur.existsErr
 }
 
-func (ur *fakeUserRepository) Save(ctx context.Context, user core.User) error {
+func (ur *fakeUserRepository) Save(ctx context.Context, user domain.User) error {
 
 	ur.saveCalled = true
 	return nil
@@ -75,8 +75,8 @@ func (ur *fakeUserRepository) Save(ctx context.Context, user core.User) error {
 func (ur *fakeUserRepository) GetByEmail(
 	ctx context.Context,
 	email string,
-) (core.User, error) {
-	return core.User{}, nil
+) (domain.User, error) {
+	return domain.User{}, nil
 }
 
 // fakePasswordHasher

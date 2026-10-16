@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"user-service/internal/application/dto"
-	"user-service/internal/application/ports/outbound"
-	"user-service/internal/core"
+	"user-service/internal/core/domain"
+	"user-service/internal/core/dto"
+	corerrors "user-service/internal/core/corerrors"
+	"user-service/internal/core/ports/outbound"
 )
 
 type RegisterUseCase struct {
@@ -30,7 +31,7 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 		return dto.RegisterOutput{}, fmt.Errorf("check user existence by email: %w", err)
 	}
 	if exist {
-		return dto.RegisterOutput{}, ErrUserAlreadyExists
+		return dto.RegisterOutput{}, corerrors.ErrUserAlreadyExists
 	}
 
 	passwordHashStr, err := uc.hasher.Hash(input.Password)
@@ -39,7 +40,7 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 	}
 
 	id := uc.idGenerator.NewID()
-	user := core.User{
+	user := domain.User{
 		ID:           id,
 		Email:        input.Email,
 		PasswordHash: passwordHashStr,

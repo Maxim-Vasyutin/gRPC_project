@@ -1,7 +1,7 @@
 package hasher
 
 import (
-	"user-service/internal/application/ports/outbound"
+	"user-service/internal/core/ports/outbound"
 
 	"golang.org/x/crypto/bcrypt"
 )

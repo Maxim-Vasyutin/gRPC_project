@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"user-service/internal/core"
+	"user-service/internal/core/domain"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -36,7 +36,7 @@ func (r PostgresUserRepository) ExistsByEmail(ctx context.Context, email string)
 	}
 }
 
-func (r PostgresUserRepository) Save(ctx context.Context, user core.User) error {
+func (r PostgresUserRepository) Save(ctx context.Context, user domain.User) error {
 	query := `
 	INSERT INTO users (id, email, password_hash)
 	VALUES ($1, $2, $3)
@@ -49,14 +49,14 @@ func (r PostgresUserRepository) Save(ctx context.Context, user core.User) error 
 	return nil
 }
 
-func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (core.User, error) {
+func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (domain.User, error) {
 	query := `
 	SELECT id, email, password_hash
 	FROM users
 	WHERE email = $1
 	`
 
-	var user core.User
+	var user domain.User
 
 	err := r.pool.QueryRow(ctx, query, email).Scan(
 		&user.ID,
@@ -64,7 +64,7 @@ func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (c
 		&user.PasswordHash,
 	)
 	if err != nil {
-		return core.User{}, err
+		return domain.User{}, err
 	}
 	return user, nil
 }
