@@ -9,7 +9,7 @@ import (
 	"user-service/internal/core/dto"
 )
 
-type fakeUserRepository struct {
+type 	fakeUserRepository struct {
 	existsErr  error
 	saveCalled bool
 }
