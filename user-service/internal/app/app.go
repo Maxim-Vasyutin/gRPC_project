@@ -11,6 +11,7 @@ import (
 	"user-service/internal/adapters/outbound/postgres"
 	"user-service/internal/application"
 
+	"buf.build/go/protovalidate"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -53,7 +54,12 @@ func startServer(handler *grpcadapter.Server) error {
 		return err
 	}
 
-	grpcServer := grpc.NewServer()
+	v, err := protovalidate.New()
+	if err != nil {
+		return err
+	}
+
+	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(grpcadapter.ValidationInterceptor(v)))
 	reflection.Register(grpcServer)
 
 	userv1.RegisterUserServiceServer(grpcServer, handler)
