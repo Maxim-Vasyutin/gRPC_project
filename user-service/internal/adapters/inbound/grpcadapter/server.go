@@ -20,11 +20,12 @@ var _ userv1.UserServiceServer = (*Server)(nil)
 
 type Server struct {
 	userv1.UnimplementedUserServiceServer
-	inbPort inbound.Register
+	register inbound.Register
+	login    inbound.Login
 }
 
-func NewServer(uc inbound.Register) *Server {
-	return &Server{inbPort: uc}
+func NewServer(register inbound.Register, login inbound.Login) *Server {
+	return &Server{register: register, login: login}
 }
 
 func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error) {
@@ -33,7 +34,7 @@ func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*us
 		Password: req.Password,
 	}
 
-	output, err := s.inbPort.Register(ctx, input)
+	output, err := s.register.Register(ctx, input)
 	if err != nil {
 		if errors.Is(err, corerrors.ErrUserAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, "user already exists")
@@ -43,5 +44,26 @@ func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*us
 	}
 	return &userv1.RegisterResponse{
 		UserId: output.UserID,
+	}, nil
+}
+
+func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.LoginResponse, error) {
+	input := dto.LoginInput{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	output, err := s.login.Login(ctx, input)
+	if err != nil {
+		if errors.Is(err, corerrors.ErrInvalidCredentials) {
+			return nil, status.Error(codes.Unauthenticated, "invalid email or password")
+		}
+		log.Printf("login: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &userv1.LoginResponse{
+		AccessToken:  output.AccessToken,
+		RefreshToken: output.RefreshToken,
 	}, nil
 }

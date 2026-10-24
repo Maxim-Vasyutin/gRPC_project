@@ -29,7 +29,7 @@ func newGRPCServer(uc useCases) (*grpc.Server, error) {
 	// reflection нужен Postman/grpcurl, чтобы узнать список методов
 	reflection.Register(grpcServer)
 
-	userv1.RegisterUserServiceServer(grpcServer, grpcadapter.NewServer(uc.register))
+	userv1.RegisterUserServiceServer(grpcServer, grpcadapter.NewServer(uc.register, uc.login))
 
 	return grpcServer, nil
 }
