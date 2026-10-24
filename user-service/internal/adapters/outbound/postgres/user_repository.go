@@ -2,8 +2,11 @@ package postgres
 
 import (
 	"context"
+	"errors"
+	"user-service/internal/core/corerrors"
 	"user-service/internal/core/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -63,6 +66,9 @@ func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (d
 		&user.Email,
 		&user.PasswordHash,
 	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return domain.User{}, corerrors.ErrUserNotFound
+	}
 	if err != nil {
 		return domain.User{}, err
 	}

@@ -1,92 +1,33 @@
-// Package app is reserved for dependency wiring and application lifecycle.
+// Package app — composition root: собирает все слои сервиса и управляет его жизнью.
+//
+// Файлы пакета повторяют фазы запуска:
+//
+//	config.go — откуда берутся настройки
+//	infra.go  — подключение к внешнему миру (БД)
+//	deps.go   — сборка адаптеров и use cases
+//	grpc.go   — транспорт: gRPC-сервер, интерсепторы, хендлеры
 package app
 
-import (
-	"context"
-	userv1 "contracts/generated/user/v1"
-	"net"
-	"user-service/internal/adapters/inbound/grpcadapter"
-	"user-service/internal/adapters/outbound/hasher"
-	"user-service/internal/adapters/outbound/idgen"
-	"user-service/internal/adapters/outbound/postgres"
-	"user-service/internal/application"
+import "context"
 
-	"buf.build/go/protovalidate"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-)
-
-const (
-	//адрес БД и порт
-	dsn      = "postgres://user:password@localhost:5434/users?sslmode=disable"
-	grpcPort = ":50051"
-)
-
-func connectionDB(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		return nil, err
-	}
-
-	err = pool.Ping(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return pool, nil
-}
-
-func buildHandler(pool *pgxpool.Pool) *grpcadapter.Server {
-	repo := postgres.NewPostgresUserRepository(pool)
-
-	bcryptHasher := hasher.BcryptHasher{}
-	idGen := idgen.UUIDGenerator{}
-
-	uc := application.NewRegisterUseCase(repo, bcryptHasher, idGen)
-
-	return grpcadapter.NewServer(uc)
-}
-
-func startServer(handler *grpcadapter.Server) error {
-	lis, err := net.Listen("tcp", grpcPort)
-	if err != nil {
-		return err
-	}
-
-	v, err := protovalidate.New()
-	if err != nil {
-		return err
-	}
-
-	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(grpcadapter.ValidationInterceptor(v)))
-	reflection.Register(grpcServer)
-
-	userv1.RegisterUserServiceServer(grpcServer, handler)
-
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+// Run — оглавление запуска. Порядок строк = порядок фаз.
 func Run() error {
 	ctx := context.Background()
 
-	pool, err := connectionDB(ctx, dsn)
+	cfg := loadConfig()
+
+	pool, err := newPool(ctx, cfg.dsn)
 	if err != nil {
 		return err
 	}
-	defer pool.Close()
+	defer pool.Close() // пул живёт столько же, сколько Run, то есть сколько работает сервер
 
-	handler := buildHandler(pool)
+	uc := newUseCases(pool, cfg)
 
-	err = startServer(handler)
+	grpcServer, err := newGRPCServer(uc)
 	if err != nil {
 		return err
 	}
 
-	return nil
-
+	return serve(grpcServer, cfg.grpcPort)
 }
