@@ -3,7 +3,6 @@ package app
 import (
 	"user-service/internal/adapters/outbound/hasher"
 	"user-service/internal/adapters/outbound/idgen"
-	"user-service/internal/adapters/outbound/memory"
 	"user-service/internal/adapters/outbound/postgres"
 	"user-service/internal/adapters/outbound/token"
 	"user-service/internal/application"
@@ -29,11 +28,11 @@ func newUseCases(pool *pgxpool.Pool, cfg config) useCases {
 	pwHasher := hasher.BcryptHasher{}
 	idGen := idgen.UUIDGenerator{}
 	issuer := token.NewJWTIssuer(cfg.jwtSecret, cfg.accessTTL)
-	sessionRepo := memory.NewSessionRepository() // ВРЕМЕННО: заменить на Postgres-версию
+	sessionRepo := postgres.NewPostgresSessionRepository(pool) // ВРЕМЕННО: заменить на Postgres-версию
 
 	// ── Use cases ───────────────────────────────────────
 	registerUC := application.NewRegisterUseCase(userRepo, pwHasher, idGen)
-	loginUC := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo)
+	loginUC := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo, cfg.refreshTTL)
 
 	return useCases{
 		register: registerUC,

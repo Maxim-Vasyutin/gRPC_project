@@ -12,13 +12,15 @@ const (
 	defaultGRPCPort = ":50051"
 	devJWTSecret    = "dev-secret-do-not-use-in-prod"
 	accessTokenTTL  = 15 * time.Minute
-)
+	refreshTokenTTL = 30 * 24 * time.Hour
+	)
 
 type config struct {
-	dsn       string
-	grpcPort  string
-	jwtSecret []byte
-	accessTTL time.Duration
+	dsn        string
+	grpcPort   string
+	jwtSecret  []byte
+	accessTTL  time.Duration
+	refreshTTL time.Duration
 }
 
 // loadConfig читает настройки из переменных окружения.
@@ -31,10 +33,11 @@ func loadConfig() config {
 	}
 
 	return config{
-		dsn:       getEnv("DB_DSN", defaultDSN),
-		grpcPort:  getEnv("GRPC_PORT", defaultGRPCPort),
-		jwtSecret: []byte(secret),
-		accessTTL: accessTokenTTL,
+		dsn:        getEnv("DB_DSN", defaultDSN),
+		grpcPort:   getEnv("GRPC_PORT", defaultGRPCPort),
+		jwtSecret:  []byte(secret),
+		accessTTL:  accessTokenTTL,
+		refreshTTL: refreshTokenTTL,
 	}
 }
 

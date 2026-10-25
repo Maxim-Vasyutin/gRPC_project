@@ -74,3 +74,4 @@ func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (d
 	}
 	return user, nil
 }
+
