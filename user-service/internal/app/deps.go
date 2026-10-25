@@ -16,7 +16,8 @@ import (
 type useCases struct {
 	register inbound.Register
 	login    inbound.Login
-	// refresh, logout — когда появятся хендлеры
+	refresh  inbound.Refresh
+	logout   inbound.Logout
 }
 
 // newUseCases создаёт outbound-адаптеры и вставляет их в use cases.
@@ -28,14 +29,18 @@ func newUseCases(pool *pgxpool.Pool, cfg config) useCases {
 	pwHasher := hasher.BcryptHasher{}
 	idGen := idgen.UUIDGenerator{}
 	issuer := token.NewJWTIssuer(cfg.jwtSecret, cfg.accessTTL)
-	sessionRepo := postgres.NewPostgresSessionRepository(pool) // ВРЕМЕННО: заменить на Postgres-версию
+	sessionRepo := postgres.NewPostgresSessionRepository(pool)
 
 	// ── Use cases ───────────────────────────────────────
 	registerUC := application.NewRegisterUseCase(userRepo, pwHasher, idGen)
 	loginUC := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo, cfg.refreshTTL)
+	refreshUC := application.NewRefreshUseCase(sessionRepo, issuer, cfg.refreshTTL)
+	logoutUC := application.NewLogoutUseCase(sessionRepo)
 
 	return useCases{
 		register: registerUC,
 		login:    &loginUC, // & — потому что метод Login объявлен на *LoginUseCase
+		refresh:  &refreshUC,
+		logout:   &logoutUC,
 	}
 }

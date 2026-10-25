@@ -2,8 +2,10 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"user-service/internal/core/corerrors"
 	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/outbound"
 )
@@ -31,6 +33,9 @@ func (uc *LogoutUseCase) Logout(ctx context.Context, input dto.LogoutInput) erro
 	*/
 
 	err := uc.sessionRepo.RevokeByRefreshToken(ctx, input.RefreshToken)
+	if errors.Is(err, corerrors.ErrSessionNotFound) {
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("revoke session: %w", err)
 	}

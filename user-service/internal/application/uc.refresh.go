@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
@@ -12,15 +13,18 @@ import (
 type RefreshUseCase struct {
 	sessionRepo outbound.SessionRepository
 	tokenIssuer outbound.TokenIssuer
+	refreshTTL  time.Duration
 }
 
 func NewRefreshUseCase(
 	session outbound.SessionRepository,
 	tokenIssuer outbound.TokenIssuer,
+	refreshTTL time.Duration,
 ) RefreshUseCase {
 	return RefreshUseCase{
 		sessionRepo: session,
 		tokenIssuer: tokenIssuer,
+		refreshTTL:  refreshTTL,
 	}
 }
 
@@ -41,6 +45,7 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, input dto.RefreshInput) (
 	newsession := domain.Session{
 		UserID:       oldSession.UserID,
 		RefreshToken: tokens.RefreshToken,
+		ExpiresAt:    time.Now().Add(uc.refreshTTL),
 	}
 
 	//Заменяю старую сессию

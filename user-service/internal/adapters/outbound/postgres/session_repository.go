@@ -17,7 +17,6 @@ type PostgresSessionRepository struct {
 
 var _ outbound.SessionRepository = PostgresSessionRepository{}
 
-
 func NewPostgresSessionRepository(pool *pgxpool.Pool) PostgresSessionRepository {
 	return PostgresSessionRepository{
 		pool: pool,
@@ -65,9 +64,53 @@ func (r PostgresSessionRepository) FindByRefreshToken(ctx context.Context, refre
 }
 
 func (r PostgresSessionRepository) Replace(ctx context.Context, oldRefreshToken string, newSession domain.Session) error {
-	return errors.New("not implemented")
+
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	query := `
+	DELETE FROM sessions WHERE refresh_token = $1 AND expires_at > now()
+	`
+	tag, err := tx.Exec(ctx, query, oldRefreshToken)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return corerrors.ErrSessionNotFound
+	}
+
+	query = `
+	INSERT INTO sessions (refresh_token, user_id, expires_at)
+	VALUES ($1, $2, $3)
+	`
+	_, err = tx.Exec(ctx, query,
+		newSession.RefreshToken,
+		newSession.UserID,
+		newSession.ExpiresAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (r PostgresSessionRepository) RevokeByRefreshToken(ctx context.Context, refreshToken string) error {
-	return errors.New("not implemented")
+	query := `
+		DELETE FROM sessions WHERE refresh_token = $1
+	`
+
+	tag, err := r.pool.Exec(ctx, query, refreshToken)
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return corerrors.ErrSessionNotFound
+	}
+
+	return nil
 }

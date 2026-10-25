@@ -230,6 +230,7 @@ func (x *LoginResponse) GetRefreshToken() string {
 //Refresh
 type RefreshRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -262,6 +263,13 @@ func (x *RefreshRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RefreshRequest.ProtoReflect.Descriptor instead.
 func (*RefreshRequest) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RefreshRequest) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
 }
 
 type RefreshResponse struct {
@@ -318,7 +326,9 @@ func (x *RefreshResponse) GetRefreshToken() string {
 
 //Logout
 type LogoutRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// проверка на "не пустой" токен
+	RefreshToken  string `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -353,11 +363,18 @@ func (*LogoutRequest) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *LogoutRequest) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1bbuf/validate/validate.proto\"W\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"W\n" +
 	"\x0fRegisterRequest\x12\x1d\n" +
 	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\"5\n" +
@@ -368,17 +385,19 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\"i\n" +
 	"\rLoginResponse\x12*\n" +
 	"\faccess_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +
-	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"\x10\n" +
-	"\x0eRefreshRequest\"k\n" +
+	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\">\n" +
+	"\x0eRefreshRequest\x12,\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\frefreshToken\"k\n" +
 	"\x0fRefreshResponse\x12*\n" +
 	"\faccess_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +
-	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"\x0f\n" +
-	"\rLogoutRequest2\xfe\x01\n" +
+	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"=\n" +
+	"\rLogoutRequest\x12,\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\frefreshToken2\xfe\x01\n" +
 	"\vUserService\x12?\n" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12<\n" +
 	"\aRefresh\x12\x17.user.v1.RefreshRequest\x1a\x18.user.v1.RefreshResponse\x128\n" +
-	"\x06Logout\x12\x16.user.v1.LogoutRequest\x1a\x16.google.protobuf.EmptyB1Z/gRPC_project/contracts/generated/user/v1;userv1b\x06proto3"
+	"\x06Logout\x12\x16.user.v1.LogoutRequest\x1a\x16.google.protobuf.EmptyB$Z\"contracts/generated/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once

@@ -14,6 +14,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var _ userv1.UserServiceServer = (*Server)(nil)
@@ -22,10 +23,22 @@ type Server struct {
 	userv1.UnimplementedUserServiceServer
 	register inbound.Register
 	login    inbound.Login
+	refresh  inbound.Refresh
+	logout   inbound.Logout
 }
 
-func NewServer(register inbound.Register, login inbound.Login) *Server {
-	return &Server{register: register, login: login}
+func NewServer(
+	register inbound.Register,
+	login inbound.Login,
+	refresh inbound.Refresh,
+	logout inbound.Logout,
+) *Server {
+	return &Server{
+		register: register,
+		login:    login,
+		refresh:  refresh,
+		logout:   logout,
+	}
 }
 
 func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error) {
@@ -66,4 +79,38 @@ func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.L
 		AccessToken:  output.AccessToken,
 		RefreshToken: output.RefreshToken,
 	}, nil
+}
+
+func (s *Server) Refresh(ctx context.Context, req *userv1.RefreshRequest) (*userv1.RefreshResponse, error) {
+	input := dto.RefreshInput{
+		RefreshToken: req.RefreshToken,
+	}
+
+	output, err := s.refresh.Refresh(ctx, input)
+	if err != nil {
+		if errors.Is(err, corerrors.ErrSessionNotFound) {
+			return nil, status.Error(codes.Unauthenticated, "invalid refresh token")
+		}
+		log.Printf("refresh: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &userv1.RefreshResponse{
+		AccessToken:  output.AccessToken,
+		RefreshToken: output.RefreshToken,
+	}, nil
+}
+
+func (s *Server) Logout(ctx context.Context, req *userv1.LogoutRequest) (*emptypb.Empty, error) {
+	input := dto.LogoutInput{
+		RefreshToken: req.RefreshToken,
+	}
+
+	err := s.logout.Logout(ctx, input)
+	if err != nil {
+		log.Printf("logout: %v", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &emptypb.Empty{}, nil
 }
