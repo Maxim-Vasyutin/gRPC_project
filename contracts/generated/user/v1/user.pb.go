@@ -25,9 +25,12 @@ const (
 
 // Register
 type RegisterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Email    string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// Логин: 3-32 символа, начинается с буквы, далее латиница, цифры и "_".
+	// Не содержит "@", поэтому при входе однозначно отличается от email.
+	Login         string `protobuf:"bytes,3,opt,name=login,proto3" json:"login,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -72,6 +75,13 @@ func (x *RegisterRequest) GetEmail() string {
 func (x *RegisterRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetLogin() string {
+	if x != nil {
+		return x.Login
 	}
 	return ""
 }
@@ -123,9 +133,8 @@ func (x *RegisterResponse) GetUserId() string {
 // Login
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Поставил те же правила, чтобы не перегружать.
-	// Тут подойдёт просто проверка на "ненулёвость"
-	Email         string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	// Email или логин одним полем (если есть "@" — это email).
+	LoginOrEmail  string `protobuf:"bytes,1,opt,name=login_or_email,json=loginOrEmail,proto3" json:"login_or_email,omitempty"`
 	Password      string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -161,9 +170,9 @@ func (*LoginRequest) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LoginRequest) GetEmail() string {
+func (x *LoginRequest) GetLoginOrEmail() string {
 	if x != nil {
-		return x.Email
+		return x.LoginOrEmail
 	}
 	return ""
 }
@@ -408,14 +417,16 @@ var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"W\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x91\x01\n" +
 	"\x0fRegisterRequest\x12\x1d\n" +
 	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12%\n" +
-	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\"5\n" +
+	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\x128\n" +
+	"\x05login\x18\x03 \x01(\tB\"\xbaH\x1fr\x1d\x10\x03\x18 2\x17^[a-zA-Z][a-zA-Z0-9_]*$R\x05login\"5\n" +
 	"\x10RegisterResponse\x12!\n" +
-	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"T\n" +
-	"\fLoginRequest\x12\x1d\n" +
-	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12%\n" +
+	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x96\x02\n" +
+	"\fLoginRequest\x12\xde\x01\n" +
+	"\x0elogin_or_email\x18\x01 \x01(\tB\xb7\x01\xbaH\xb3\x01\xba\x01\xa8\x01\n" +
+	"\x15login_or_email.format\x12Tmust be a valid email or a login (letters, digits, underscore; starts with a letter)\x1a9this.isEmail() || this.matches('^[a-zA-Z][a-zA-Z0-9_]*$')r\x05\x10\x03\x18\xfe\x01R\floginOrEmail\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\"\xd5\x01\n" +
 	"\rLoginResponse\x12*\n" +
 	"\faccess_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +

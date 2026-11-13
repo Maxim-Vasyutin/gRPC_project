@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
@@ -43,6 +44,7 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 	user := domain.User{
 		ID:           id,
 		Email:        input.Email,
+		Login:        strings.ToLower(input.Login), // логин регистронезависимый: храним в нижнем регистре
 		PasswordHash: passwordHashStr,
 	}
 

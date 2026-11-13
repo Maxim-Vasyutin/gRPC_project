@@ -15,6 +15,8 @@ type RegisterUserRepository interface {
 }
 
 type LoginUserRepository interface {
+	//Вытащить пользователя по логину
+	GetByLogin(ctx context.Context, login string) (domain.User, error)
 	//Вытащить пользователя по почте
 	GetByEmail(ctx context.Context, email string) (domain.User, error)
 }

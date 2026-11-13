@@ -3,8 +3,9 @@ package dto
 import "time"
 
 type LoginInput struct {
-	Email    string
-	Password string
+	// Identifier — email или логин (если содержит "@", это email).
+	Identifier string
+	Password   string
 }
 
 type LoginOutput struct {

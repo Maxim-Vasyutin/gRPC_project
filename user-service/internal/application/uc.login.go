@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"user-service/internal/core/corerrors"
@@ -58,8 +59,17 @@ func NewLoginUseCase(
 }
 
 func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.LoginOutput, error) {
-	//Вытягиваю пользователя
-	user, err := uc.repo.GetByEmail(ctx, input.Email)
+	//Вытягиваю пользователя: есть "@" — ищем по email, иначе по логину.
+	//Логин в базе хранится в нижнем регистре.
+	var (
+		user domain.User
+		err  error
+	)
+	if strings.Contains(input.Identifier, "@") {
+		user, err = uc.repo.GetByEmail(ctx, input.Identifier)
+	} else {
+		user, err = uc.repo.GetByLogin(ctx, strings.ToLower(input.Identifier))
+	}
 	if err != nil {
 		//смотрим, что ошибка с ненайденным пользователем
 		//и отправляем общую ошибку, чтобы было безопаснее
@@ -67,7 +77,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 			uc.hasher.Verify(input.Password, uc.dummyHash)
 			return dto.LoginOutput{}, corerrors.ErrInvalidCredentials
 		}
-		return dto.LoginOutput{}, fmt.Errorf("get user by email: %w", err)
+		return dto.LoginOutput{}, fmt.Errorf("get user by identifier: %w", err)
 	}
 
 	//Верификация введёного пароля и сохраннного хэша

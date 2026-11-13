@@ -47,6 +47,7 @@ func NewServer(
 func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error) {
 	input := dto.RegisterInput{
 		Email:    req.Email,
+		Login:    req.Login,
 		Password: req.Password,
 	}
 
@@ -65,14 +66,14 @@ func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*us
 
 func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.LoginResponse, error) {
 	input := dto.LoginInput{
-		Email:    req.Email,
-		Password: req.Password,
+		Identifier: req.LoginOrEmail,
+		Password:   req.Password,
 	}
 
 	output, err := s.login.Login(ctx, input)
 	if err != nil {
 		if errors.Is(err, corerrors.ErrInvalidCredentials) {
-			return nil, status.Error(codes.Unauthenticated, "invalid email or password")
+			return nil, status.Error(codes.Unauthenticated, "invalid credentials")
 		}
 		s.logger.Error("login failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
