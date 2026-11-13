@@ -32,11 +32,11 @@ func NewLoginUseCase(
 	tokenIssuer outbound.TokenIssuer,
 	sessionRepo outbound.SessionRepository,
 	refreshTTL time.Duration,
-) LoginUseCase {
+) *LoginUseCase {
 	dummyHash, err := hasher.Hash("dummy-password")
 	if err != nil {
 		log.Printf("dummy hash not generated")
-		return LoginUseCase{
+		return &LoginUseCase{
 			repo:        repo,
 			hasher:      hasher,
 			tokenIssuer: tokenIssuer,
@@ -45,7 +45,7 @@ func NewLoginUseCase(
 			refreshTTL:  refreshTTL}
 	}
 
-	return LoginUseCase{
+	return &LoginUseCase{
 		repo:        repo,
 		hasher:      hasher,
 		tokenIssuer: tokenIssuer,

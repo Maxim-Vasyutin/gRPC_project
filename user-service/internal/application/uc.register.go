@@ -16,8 +16,8 @@ type RegisterUseCase struct {
 	idGenerator outbound.IDGenerator
 }
 
-func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.PasswordHasher, id outbound.IDGenerator) RegisterUseCase {
-	return RegisterUseCase{
+func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.PasswordHasher, id outbound.IDGenerator) *RegisterUseCase {
+	return &RegisterUseCase{
 		repo:        repo,
 		hasher:      hash,
 		idGenerator: id,

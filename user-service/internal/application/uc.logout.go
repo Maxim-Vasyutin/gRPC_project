@@ -16,8 +16,8 @@ type LogoutUseCase struct {
 
 func NewLogoutUseCase(
 	sessionRepo outbound.SessionRepository,
-) LogoutUseCase {
-	return LogoutUseCase{
+) *LogoutUseCase {
+	return &LogoutUseCase{
 		sessionRepo: sessionRepo,
 	}
 }

@@ -44,8 +44,8 @@ func newUseCases(pool *pgxpool.Pool, cfg config) (useCases, error) {
 
 	return useCases{
 		register: registerUC,
-		login:    &loginUC, // & — потому что метод Login объявлен на *LoginUseCase
-		refresh:  &refreshUC,
-		logout:   &logoutUC,
+		login:    loginUC,
+		refresh:  refreshUC,
+		logout:   logoutUC,
 	}, nil
 }
