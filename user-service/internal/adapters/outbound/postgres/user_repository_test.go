@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"os"
 	"testing"
 	"user-service/internal/core/domain"
 
@@ -10,7 +11,10 @@ import (
 
 func TestPostgresUserRepository_SaveAndGetByEmail(t *testing.T) {
 	ctx := context.Background()
-	dsn := "postgres://user:password@localhost:5434/users?sslmode=disable"
+	dsn := os.Getenv("TEST_DATABASE_DSN")
+	if dsn == "" {
+		t.Skip("TEST_DATABASE_DSN не задан: пропускаем интеграционный тест с Postgres")
+	}
 
 	//создаём соединение
 	pool, err := pgxpool.New(ctx, dsn)
