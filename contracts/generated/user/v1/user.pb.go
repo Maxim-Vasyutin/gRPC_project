@@ -23,7 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-//Register
+// Register
 type RegisterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -120,11 +120,11 @@ func (x *RegisterResponse) GetUserId() string {
 	return ""
 }
 
-//Login
+// Login
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	//Поставил те же правила, чтобы не перегружать.
-	//Тут подойдёт просто проверка на "ненулёвость"
+	// Поставил те же правила, чтобы не перегружать.
+	// Тут подойдёт просто проверка на "ненулёвость"
 	Email         string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -227,7 +227,7 @@ func (x *LoginResponse) GetRefreshToken() string {
 	return ""
 }
 
-//Refresh
+// Refresh
 type RefreshRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -324,7 +324,7 @@ func (x *RefreshResponse) GetRefreshToken() string {
 	return ""
 }
 
-//Logout
+// Logout
 type LogoutRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// проверка на "не пустой" токен
@@ -385,14 +385,16 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\"i\n" +
 	"\rLoginResponse\x12*\n" +
 	"\faccess_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +
-	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\">\n" +
-	"\x0eRefreshRequest\x12,\n" +
-	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\frefreshToken\"k\n" +
+	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"A\n" +
+	"\x0eRefreshRequest\x12/\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x10\x18\x80\x01R\frefreshToken\"k\n" +
 	"\x0fRefreshResponse\x12*\n" +
 	"\faccess_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +
-	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"=\n" +
-	"\rLogoutRequest\x12,\n" +
-	"\rrefresh_token\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\frefreshToken2\xfe\x01\n" +
+	"\rrefresh_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\"@\n" +
+	"\rLogoutRequest\x12/\n" +
+	"\rrefresh_token\x18\x01 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x10\x18\x80\x01R\frefreshToken2\xfe\x01\n" +
 	"\vUserService\x12?\n" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12<\n" +
