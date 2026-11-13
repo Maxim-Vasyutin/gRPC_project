@@ -13,8 +13,9 @@ import (
 	"user-service/internal/core/ports/outbound"
 )
 
-// Хэш-заглушка (валидный SHA-256 формат в hex)
-const MockHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+// MockHash — запасной настоящий bcrypt-хеш (cost=10) для выравнивания времени ответа,
+// если не удалось сгенерировать dummyHash. Соответствует паролю "dummy-password".
+const MockHash = "$2a$10$cfJUOhJNImTPfTgBETEiiuNzrWELOaaY0.bBAbCdBKL46HEL9nTSa"
 
 type LoginUseCase struct {
 	repo        outbound.LoginUserRepository
