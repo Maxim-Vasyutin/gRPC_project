@@ -14,7 +14,10 @@ import "context"
 func Run() error {
 	ctx := context.Background()
 
-	cfg := loadConfig()
+	cfg, err := loadConfig()
+	if err != nil {
+		return err
+	}
 
 	pool, err := newPool(ctx, cfg.dsn)
 	if err != nil {
@@ -22,7 +25,10 @@ func Run() error {
 	}
 	defer pool.Close() // пул живёт столько же, сколько Run, то есть сколько работает сервер
 
-	uc := newUseCases(pool, cfg)
+	uc, err := newUseCases(pool, cfg)
+	if err != nil {
+		return err
+	}
 
 	grpcServer, err := newGRPCServer(uc)
 	if err != nil {

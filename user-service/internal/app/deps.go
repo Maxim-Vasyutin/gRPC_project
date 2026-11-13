@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"user-service/internal/adapters/outbound/hasher"
 	"user-service/internal/adapters/outbound/idgen"
 	"user-service/internal/adapters/outbound/postgres"
@@ -23,10 +25,13 @@ type useCases struct {
 // newUseCases создаёт outbound-адаптеры и вставляет их в use cases.
 // Это единственное место, где конкретные типы (Postgres, bcrypt, JWT)
 // встречаются с портами ядра.
-func newUseCases(pool *pgxpool.Pool, cfg config) useCases {
+func newUseCases(pool *pgxpool.Pool, cfg config) (useCases, error) {
 	// ── Outbound-адаптеры ───────────────────────────────
 	userRepo := postgres.NewPostgresUserRepository(pool)
-	pwHasher := hasher.BcryptHasher{}
+	pwHasher, err := hasher.NewBcryptHasher(cfg.bcryptCost)
+	if err != nil {
+		return useCases{}, fmt.Errorf("create password hasher: %w", err)
+	}
 	idGen := idgen.UUIDGenerator{}
 	issuer := token.NewJWTIssuer(cfg.jwtSecret, cfg.accessTTL)
 	sessionRepo := postgres.NewPostgresSessionRepository(pool)
@@ -42,5 +47,5 @@ func newUseCases(pool *pgxpool.Pool, cfg config) useCases {
 		login:    &loginUC, // & — потому что метод Login объявлен на *LoginUseCase
 		refresh:  &refreshUC,
 		logout:   &logoutUC,
-	}
+	}, nil
 }
