@@ -11,6 +11,7 @@ import (
 	"user-service/internal/core/ports/inbound"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 // useCases — все сценарии сервиса, собранные и готовые к работе.
@@ -25,7 +26,7 @@ type useCases struct {
 // newUseCases создаёт outbound-адаптеры и вставляет их в use cases.
 // Это единственное место, где конкретные типы (Postgres, bcrypt, JWT)
 // встречаются с портами ядра.
-func newUseCases(pool *pgxpool.Pool, cfg config) (useCases, error) {
+func newUseCases(pool *pgxpool.Pool, cfg config, logger *zap.Logger) (useCases, error) {
 	// ── Outbound-адаптеры ───────────────────────────────
 	userRepo := postgres.NewPostgresUserRepository(pool)
 	pwHasher, err := hasher.NewBcryptHasher(cfg.bcryptCost)
@@ -38,7 +39,7 @@ func newUseCases(pool *pgxpool.Pool, cfg config) (useCases, error) {
 
 	// ── Use cases ───────────────────────────────────────
 	registerUC := application.NewRegisterUseCase(userRepo, pwHasher, idGen)
-	loginUC := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo, cfg.refreshTTL)
+	loginUC := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo, cfg.refreshTTL, logger)
 	refreshUC := application.NewRefreshUseCase(sessionRepo, issuer, cfg.refreshTTL)
 	logoutUC := application.NewLogoutUseCase(sessionRepo)
 

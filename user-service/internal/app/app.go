@@ -8,13 +8,17 @@
 //	grpc.go   — транспорт: gRPC-сервер, интерсепторы, хендлеры
 package app
 
-import "context"
+import (
+	"context"
+
+	"go.uber.org/zap"
+)
 
 // Run — оглавление запуска. Порядок строк = порядок фаз.
-func Run() error {
+func Run(logger *zap.Logger) error {
 	ctx := context.Background()
 
-	cfg, err := loadConfig()
+	cfg, err := loadConfig(logger)
 	if err != nil {
 		return err
 	}
@@ -25,15 +29,15 @@ func Run() error {
 	}
 	defer pool.Close() // пул живёт столько же, сколько Run, то есть сколько работает сервер
 
-	uc, err := newUseCases(pool, cfg)
+	uc, err := newUseCases(pool, cfg, logger)
 	if err != nil {
 		return err
 	}
 
-	grpcServer, err := newGRPCServer(uc)
+	grpcServer, err := newGRPCServer(uc, logger)
 	if err != nil {
 		return err
 	}
 
-	return serve(grpcServer, cfg.grpcPort)
+	return serve(grpcServer, cfg.grpcPort, logger)
 }

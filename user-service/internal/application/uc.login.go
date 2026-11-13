@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"user-service/internal/core/corerrors"
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/outbound"
+
+	"go.uber.org/zap"
 )
 
 // MockHash — запасной настоящий bcrypt-хеш (cost=10) для выравнивания времени ответа,
@@ -32,10 +33,11 @@ func NewLoginUseCase(
 	tokenIssuer outbound.TokenIssuer,
 	sessionRepo outbound.SessionRepository,
 	refreshTTL time.Duration,
+	logger *zap.Logger,
 ) *LoginUseCase {
 	dummyHash, err := hasher.Hash("dummy-password")
 	if err != nil {
-		log.Printf("dummy hash not generated")
+		logger.Warn("dummy hash not generated, using MockHash", zap.Error(err))
 		return &LoginUseCase{
 			repo:        repo,
 			hasher:      hasher,

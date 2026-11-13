@@ -7,11 +7,11 @@ import (
 	"context"
 	userv1 "contracts/generated/user/v1"
 	"errors"
-	"log"
 	"user-service/internal/core/corerrors"
 	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/inbound"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -25,6 +25,7 @@ type Server struct {
 	login    inbound.Login
 	refresh  inbound.Refresh
 	logout   inbound.Logout
+	logger   *zap.Logger
 }
 
 func NewServer(
@@ -32,12 +33,14 @@ func NewServer(
 	login inbound.Login,
 	refresh inbound.Refresh,
 	logout inbound.Logout,
+	logger *zap.Logger,
 ) *Server {
 	return &Server{
 		register: register,
 		login:    login,
 		refresh:  refresh,
 		logout:   logout,
+		logger:   logger,
 	}
 }
 
@@ -52,7 +55,7 @@ func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*us
 		if errors.Is(err, corerrors.ErrUserAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, "user already exists")
 		}
-		log.Printf("register: %v", err)
+		s.logger.Error("register failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &userv1.RegisterResponse{
@@ -71,7 +74,7 @@ func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.L
 		if errors.Is(err, corerrors.ErrInvalidCredentials) {
 			return nil, status.Error(codes.Unauthenticated, "invalid email or password")
 		}
-		log.Printf("login: %v", err)
+		s.logger.Error("login failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -91,7 +94,7 @@ func (s *Server) Refresh(ctx context.Context, req *userv1.RefreshRequest) (*user
 		if errors.Is(err, corerrors.ErrSessionNotFound) {
 			return nil, status.Error(codes.Unauthenticated, "invalid refresh token")
 		}
-		log.Printf("refresh: %v", err)
+		s.logger.Error("refresh failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
@@ -108,7 +111,7 @@ func (s *Server) Logout(ctx context.Context, req *userv1.LogoutRequest) (*emptyp
 
 	err := s.logout.Logout(ctx, input)
 	if err != nil {
-		log.Printf("logout: %v", err)
+		s.logger.Error("logout failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
