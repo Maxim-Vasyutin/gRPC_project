@@ -58,5 +58,8 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, input dto.RefreshInput) (
 	return dto.RefreshOutput{
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
+
+		AccessExpiresIn:  tokens.AccessTTL,
+		RefreshExpiresIn: uc.refreshTTL,
 	}, nil
 }

@@ -41,6 +41,9 @@ message LoginRequest {
 message LoginResponse {
   string access_token = 1 [(buf.validate.field).string.min_len = 8];
   string refresh_token = 2 [(buf.validate.field).string.min_len = 8];
+  // Время жизни токенов в секундах, считая от момента выдачи.
+  int64 access_expires_in = 3 [(buf.validate.field).int64.gt = 0];
+  int64 refresh_expires_in = 4 [(buf.validate.field).int64.gt = 0];
 }
 
 //
@@ -56,6 +59,9 @@ message RefreshRequest {
 message RefreshResponse {
   string access_token = 1 [(buf.validate.field).string.min_len = 8]; //new
   string refresh_token = 2 [(buf.validate.field).string.min_len = 8]; //new
+  // Время жизни новых токенов в секундах, считая от момента выдачи.
+  int64 access_expires_in = 3 [(buf.validate.field).int64.gt = 0];
+  int64 refresh_expires_in = 4 [(buf.validate.field).int64.gt = 0];
 }
 
 //Logout

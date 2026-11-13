@@ -96,6 +96,9 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 	}
 
 	return dto.LoginOutput{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken}, nil
+		AccessToken:      tokens.AccessToken,
+		RefreshToken:     tokens.RefreshToken,
+		AccessExpiresIn:  tokens.AccessTTL,
+		RefreshExpiresIn: uc.refreshTTL,
+	}, nil
 }

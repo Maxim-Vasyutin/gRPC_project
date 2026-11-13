@@ -79,8 +79,10 @@ func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.L
 	}
 
 	return &userv1.LoginResponse{
-		AccessToken:  output.AccessToken,
-		RefreshToken: output.RefreshToken,
+		AccessToken:      output.AccessToken,
+		RefreshToken:     output.RefreshToken,
+		AccessExpiresIn:  int64(output.AccessExpiresIn.Seconds()),
+		RefreshExpiresIn: int64(output.RefreshExpiresIn.Seconds()),
 	}, nil
 }
 
@@ -99,8 +101,10 @@ func (s *Server) Refresh(ctx context.Context, req *userv1.RefreshRequest) (*user
 	}
 
 	return &userv1.RefreshResponse{
-		AccessToken:  output.AccessToken,
-		RefreshToken: output.RefreshToken,
+		AccessToken:      output.AccessToken,
+		RefreshToken:     output.RefreshToken,
+		AccessExpiresIn:  int64(output.AccessExpiresIn.Seconds()),
+		RefreshExpiresIn: int64(output.RefreshExpiresIn.Seconds()),
 	}, nil
 }
 
