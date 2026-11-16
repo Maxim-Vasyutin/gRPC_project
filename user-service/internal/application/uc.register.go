@@ -27,7 +27,7 @@ func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.Pass
 
 func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput) (dto.RegisterOutput, error) {
 
-	exist, err := uc.repo.ExistsByEmail(ctx, input.Email)
+	exist, err := uc.repo.ExistsByEmail(ctx, strings.ToLower(input.Email))
 	if err != nil {
 		return dto.RegisterOutput{}, fmt.Errorf("check user existence by email: %w", err)
 	}
@@ -43,7 +43,7 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 	id := uc.idGenerator.NewID()
 	user := domain.User{
 		ID:           id,
-		Email:        input.Email,
+		Email:        strings.ToLower(input.Email), // email регистронезависимый
 		Login:        strings.ToLower(input.Login), // логин регистронезависимый: храним в нижнем регистре
 		PasswordHash: passwordHashStr,
 	}

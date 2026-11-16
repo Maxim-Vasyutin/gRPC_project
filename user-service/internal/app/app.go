@@ -29,7 +29,7 @@ func Run(logger *zap.Logger) error {
 	}
 	defer pool.Close() // пул живёт столько же, сколько Run, то есть сколько работает сервер
 
-	uc, err := newUseCases(pool, cfg, logger)
+	uc, err := newUseCases(pool, cfg)
 	if err != nil {
 		return err
 	}

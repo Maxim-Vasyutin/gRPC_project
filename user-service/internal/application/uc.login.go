@@ -11,13 +11,7 @@ import (
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/outbound"
-
-	"go.uber.org/zap"
 )
-
-// MockHash — запасной настоящий bcrypt-хеш (cost=10) для выравнивания времени ответа,
-// если не удалось сгенерировать dummyHash. Соответствует паролю "dummy-password".
-const MockHash = "$2a$10$cfJUOhJNImTPfTgBETEiiuNzrWELOaaY0.bBAbCdBKL46HEL9nTSa"
 
 type LoginUseCase struct {
 	repo        outbound.LoginUserRepository
@@ -34,18 +28,10 @@ func NewLoginUseCase(
 	tokenIssuer outbound.TokenIssuer,
 	sessionRepo outbound.SessionRepository,
 	refreshTTL time.Duration,
-	logger *zap.Logger,
-) *LoginUseCase {
+) (*LoginUseCase, error) {
 	dummyHash, err := hasher.Hash("dummy-password")
 	if err != nil {
-		logger.Warn("dummy hash not generated, using MockHash", zap.Error(err))
-		return &LoginUseCase{
-			repo:        repo,
-			hasher:      hasher,
-			tokenIssuer: tokenIssuer,
-			sessionRepo: sessionRepo,
-			dummyHash:   MockHash,
-			refreshTTL:  refreshTTL}
+		return nil, fmt.Errorf("new login use case: hash dummy password: %w", err)
 	}
 
 	return &LoginUseCase{
@@ -55,7 +41,7 @@ func NewLoginUseCase(
 		sessionRepo: sessionRepo,
 		dummyHash:   dummyHash,
 		refreshTTL:  refreshTTL,
-	}
+	}, nil
 }
 
 func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.LoginOutput, error) {
@@ -66,7 +52,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 		err  error
 	)
 	if strings.Contains(input.Identifier, "@") {
-		user, err = uc.repo.GetByEmail(ctx, input.Identifier)
+		user, err = uc.repo.GetByEmail(ctx, strings.ToLower(input.Identifier))
 	} else {
 		user, err = uc.repo.GetByLogin(ctx, strings.ToLower(input.Identifier))
 	}
