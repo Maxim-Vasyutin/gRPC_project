@@ -30,7 +30,7 @@ type config struct {
 }
 
 // loadConfig читает настройки из переменных окружения.
-// Если переменная не задана — берётся значение для локальной разработки.
+// Если переменная не задана — берётся значение по умолчанию для локальной разработки.
 func loadConfig(logger *zap.Logger) (config, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
