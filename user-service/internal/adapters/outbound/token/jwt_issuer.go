@@ -1,6 +1,6 @@
 /*
-JWT-токен состоинт из трёх частей через точку xxx.yyy.zzz
-первая часть - header - алгортим подписи (HS256)
+JWT-токен состоит из трёх частей через точку xxx.yyy.zzz
+первая часть - header - алгоритм подписи (HS256)
 вторая часть - payload - мои данные
 третья часть - signature - результат высчисления с секретом. Секрет всегда на сервере
 
@@ -61,7 +61,7 @@ func (jt *JWTIssuer) Issue(userID string) (dto.TokenPair, error) {
 		return dto.TokenPair{}, err
 	}
 
-	return dto.TokenPair{AccessToken: access, RefreshToken: refresh}, nil
+	return dto.TokenPair{AccessToken: access, RefreshToken: refresh, AccessTTL: jt.accessTTL}, nil
 }
 
 // newRefreshToken: 32 случайных байта из crypto/rand, превращённые в строку.

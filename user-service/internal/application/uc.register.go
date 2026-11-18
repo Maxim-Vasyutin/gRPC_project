@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	corerrors "user-service/internal/core/corerrors"
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
-	corerrors "user-service/internal/core/corerrors"
 	"user-service/internal/core/ports/outbound"
 )
 
@@ -16,8 +16,8 @@ type RegisterUseCase struct {
 	idGenerator outbound.IDGenerator
 }
 
-func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.PasswordHasher, id outbound.IDGenerator) RegisterUseCase {
-	return RegisterUseCase{
+func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.PasswordHasher, id outbound.IDGenerator) *RegisterUseCase {
+	return &RegisterUseCase{
 		repo:        repo,
 		hasher:      hash,
 		idGenerator: id,
@@ -26,7 +26,11 @@ func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.Pass
 
 func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput) (dto.RegisterOutput, error) {
 
-	exist, err := uc.repo.ExistsByEmail(ctx, input.Email)
+	// В коре написал метод приведения к одному регистру для почты
+	emailLower := domain.NormalizeEmail(input.Email)
+	loginLower := domain.NormalizeLogin(input.Login)
+
+	exist, err := uc.repo.ExistsByEmail(ctx, emailLower)
 	if err != nil {
 		return dto.RegisterOutput{}, fmt.Errorf("check user existence by email: %w", err)
 	}
@@ -42,7 +46,8 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 	id := uc.idGenerator.NewID()
 	user := domain.User{
 		ID:           id,
-		Email:        input.Email,
+		Email:        emailLower, // email регистронезависимый
+		Login:        loginLower, // логин регистронезависимый: храним в нижнем регистре
 		PasswordHash: passwordHashStr,
 	}
 

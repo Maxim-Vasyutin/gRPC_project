@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"strings"
 	"time"
 
 	"user-service/internal/core/corerrors"
@@ -12,9 +12,6 @@ import (
 	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/outbound"
 )
-
-// Хэш-заглушка (валидный SHA-256 формат в hex)
-const MockHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
 type LoginUseCase struct {
 	repo        outbound.LoginUserRepository
@@ -31,32 +28,35 @@ func NewLoginUseCase(
 	tokenIssuer outbound.TokenIssuer,
 	sessionRepo outbound.SessionRepository,
 	refreshTTL time.Duration,
-) LoginUseCase {
+) (*LoginUseCase, error) {
 	dummyHash, err := hasher.Hash("dummy-password")
 	if err != nil {
-		log.Printf("dummy hash not generated")
-		return LoginUseCase{
-			repo:        repo,
-			hasher:      hasher,
-			tokenIssuer: tokenIssuer,
-			sessionRepo: sessionRepo,
-			dummyHash:   MockHash,
-			refreshTTL:  refreshTTL}
+		return nil, fmt.Errorf("new login use case: hash dummy password: %w", err)
 	}
 
-	return LoginUseCase{
+	return &LoginUseCase{
 		repo:        repo,
 		hasher:      hasher,
 		tokenIssuer: tokenIssuer,
 		sessionRepo: sessionRepo,
 		dummyHash:   dummyHash,
 		refreshTTL:  refreshTTL,
-	}
+	}, nil
 }
 
 func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.LoginOutput, error) {
-	//Вытягиваю пользователя
-	user, err := uc.repo.GetByEmail(ctx, input.Email)
+	//Вытягиваю пользователя: есть "@" — ищем по email, иначе по логину.
+	//Логин в базе хранится в нижнем регистре.
+	var (
+		user domain.User
+		err  error
+	)
+
+	if strings.Contains(input.Identifier, "@") {
+		user, err = uc.repo.GetByEmail(ctx, domain.NormalizeEmail(input.Identifier))
+	} else {
+		user, err = uc.repo.GetByLogin(ctx, domain.NormalizeLogin(input.Identifier))
+	}
 	if err != nil {
 		//смотрим, что ошибка с ненайденным пользователем
 		//и отправляем общую ошибку, чтобы было безопаснее
@@ -64,7 +64,7 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 			uc.hasher.Verify(input.Password, uc.dummyHash)
 			return dto.LoginOutput{}, corerrors.ErrInvalidCredentials
 		}
-		return dto.LoginOutput{}, fmt.Errorf("get user by email: %w", err)
+		return dto.LoginOutput{}, fmt.Errorf("get user by identifier: %w", err)
 	}
 
 	//Верификация введёного пароля и сохраннного хэша
@@ -93,6 +93,9 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 	}
 
 	return dto.LoginOutput{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken}, nil
+		AccessToken:      tokens.AccessToken,
+		RefreshToken:     tokens.RefreshToken,
+		AccessExpiresIn:  tokens.AccessTTL,
+		RefreshExpiresIn: uc.refreshTTL,
+	}, nil
 }

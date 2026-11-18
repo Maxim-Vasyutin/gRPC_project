@@ -21,6 +21,13 @@ message RegisterRequest {
     (buf.validate.field).string.min_len = 8,
     (buf.validate.field).string.max_len = 64
   ];
+  // Логин: 3-32 символа, начинается с буквы, далее латиница, цифры и "_".
+  // Не содержит "@", поэтому при входе однозначно отличается от email.
+  string login = 3 [
+    (buf.validate.field).string.min_len = 3,
+    (buf.validate.field).string.max_len = 32,
+    (buf.validate.field).string.pattern = "^[a-zA-Z][a-zA-Z0-9_]*$"
+  ];
 }
 message RegisterResponse {
   string user_id = 1 [(buf.validate.field).string.uuid = true];
@@ -29,9 +36,16 @@ message RegisterResponse {
 
 //Login
 message LoginRequest {
-  //Поставил те же правила, чтобы не перегружать. 
-  //Тут подойдёт просто проверка на "ненулёвость"
-  string email = 1 [(buf.validate.field).string.email = true];
+  // Email или логин одним полем (если есть "@" — это email).
+  string login_or_email = 1 [
+    (buf.validate.field).string.min_len = 3,
+    (buf.validate.field).string.max_len = 254,
+    (buf.validate.field).cel = {
+      id: "login_or_email.format",
+      message: "must be a valid email or a login (letters, digits, underscore; starts with a letter)",
+      expression: "this.isEmail() || this.matches('^[a-zA-Z][a-zA-Z0-9_]*$')"
+    }
+  ];
   string password = 2 [
     (buf.validate.field).string.min_len = 8,
     (buf.validate.field).string.max_len = 64
@@ -41,22 +55,34 @@ message LoginRequest {
 message LoginResponse {
   string access_token = 1 [(buf.validate.field).string.min_len = 8];
   string refresh_token = 2 [(buf.validate.field).string.min_len = 8];
+  // Время жизни токенов в секундах, считая от момента выдачи.
+  int64 access_expires_in = 3 [(buf.validate.field).int64.gt = 0];
+  int64 refresh_expires_in = 4 [(buf.validate.field).int64.gt = 0];
 }
 
 //
 
 //Refresh
 message RefreshRequest {
-  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  string refresh_token = 1 [
+    (buf.validate.field).string.min_len = 16,
+    (buf.validate.field).string.max_len = 128
+  ];
 }
 
 message RefreshResponse {
   string access_token = 1 [(buf.validate.field).string.min_len = 8]; //new
   string refresh_token = 2 [(buf.validate.field).string.min_len = 8]; //new
+  // Время жизни новых токенов в секундах, считая от момента выдачи.
+  int64 access_expires_in = 3 [(buf.validate.field).int64.gt = 0];
+  int64 refresh_expires_in = 4 [(buf.validate.field).int64.gt = 0];
 }
 
 //Logout
 message LogoutRequest {
   // проверка на "не пустой" токен
-  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  string refresh_token = 1 [
+    (buf.validate.field).string.min_len = 16,
+    (buf.validate.field).string.max_len = 128
+  ];
 }

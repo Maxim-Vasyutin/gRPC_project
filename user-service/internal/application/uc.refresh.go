@@ -20,8 +20,8 @@ func NewRefreshUseCase(
 	session outbound.SessionRepository,
 	tokenIssuer outbound.TokenIssuer,
 	refreshTTL time.Duration,
-) RefreshUseCase {
-	return RefreshUseCase{
+) *RefreshUseCase {
+	return &RefreshUseCase{
 		sessionRepo: session,
 		tokenIssuer: tokenIssuer,
 		refreshTTL:  refreshTTL,
@@ -58,5 +58,8 @@ func (uc *RefreshUseCase) Refresh(ctx context.Context, input dto.RefreshInput) (
 	return dto.RefreshOutput{
 		AccessToken:  tokens.AccessToken,
 		RefreshToken: tokens.RefreshToken,
+
+		AccessExpiresIn:  tokens.AccessTTL,
+		RefreshExpiresIn: uc.refreshTTL,
 	}, nil
 }

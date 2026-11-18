@@ -41,11 +41,11 @@ func (r PostgresUserRepository) ExistsByEmail(ctx context.Context, email string)
 
 func (r PostgresUserRepository) Save(ctx context.Context, user domain.User) error {
 	query := `
-	INSERT INTO users (id, email, password_hash)
-	VALUES ($1, $2, $3)
+	INSERT INTO users (id, email, login, password_hash)
+	VALUES ($1, $2, $3, $4)
 	`
 
-	_, err := r.pool.Exec(ctx, query, user.ID, user.Email, user.PasswordHash)
+	_, err := r.pool.Exec(ctx, query, user.ID, user.Email, user.Login, user.PasswordHash)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (r PostgresUserRepository) Save(ctx context.Context, user domain.User) erro
 
 func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (domain.User, error) {
 	query := `
-	SELECT id, email, password_hash
+	SELECT id, email, login, password_hash
 	FROM users
 	WHERE email = $1
 	`
@@ -64,6 +64,7 @@ func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (d
 	err := r.pool.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.Email,
+		&user.Login,
 		&user.PasswordHash,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -75,3 +76,26 @@ func (r PostgresUserRepository) GetByEmail(ctx context.Context, email string) (d
 	return user, nil
 }
 
+func (r PostgresUserRepository) GetByLogin(ctx context.Context, login string) (domain.User, error) {
+	query := `
+	SELECT id, email, login, password_hash
+	FROM users
+	WHERE login = $1
+	`
+
+	var user domain.User
+
+	err := r.pool.QueryRow(ctx, query, login).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Login,
+		&user.PasswordHash,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return domain.User{}, corerrors.ErrUserNotFound
+	}
+	if err != nil {
+		return domain.User{}, err
+	}
+	return user, nil
+}
