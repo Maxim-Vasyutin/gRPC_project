@@ -3,11 +3,10 @@ package application
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	corerrors "user-service/internal/core/corerrors"
 	"user-service/internal/core/domain"
 	"user-service/internal/core/dto"
-	corerrors "user-service/internal/core/corerrors"
 	"user-service/internal/core/ports/outbound"
 )
 
@@ -27,7 +26,11 @@ func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.Pass
 
 func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput) (dto.RegisterOutput, error) {
 
-	exist, err := uc.repo.ExistsByEmail(ctx, strings.ToLower(input.Email))
+	// В коре написал метод приведения к одному регистру для почты
+	emailLower := domain.NormalizeEmail(input.Email)
+	loginLower := domain.NormalizeLogin(input.Login)
+
+	exist, err := uc.repo.ExistsByEmail(ctx, emailLower)
 	if err != nil {
 		return dto.RegisterOutput{}, fmt.Errorf("check user existence by email: %w", err)
 	}
@@ -43,8 +46,8 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 	id := uc.idGenerator.NewID()
 	user := domain.User{
 		ID:           id,
-		Email:        strings.ToLower(input.Email), // email регистронезависимый
-		Login:        strings.ToLower(input.Login), // логин регистронезависимый: храним в нижнем регистре
+		Email:        emailLower, // email регистронезависимый
+		Login:        loginLower, // логин регистронезависимый: храним в нижнем регистре
 		PasswordHash: passwordHashStr,
 	}
 

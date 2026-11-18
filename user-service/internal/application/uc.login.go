@@ -51,10 +51,11 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 		user domain.User
 		err  error
 	)
+
 	if strings.Contains(input.Identifier, "@") {
-		user, err = uc.repo.GetByEmail(ctx, strings.ToLower(input.Identifier))
+		user, err = uc.repo.GetByEmail(ctx, domain.NormalizeEmail(input.Identifier))
 	} else {
-		user, err = uc.repo.GetByLogin(ctx, strings.ToLower(input.Identifier))
+		user, err = uc.repo.GetByLogin(ctx, domain.NormalizeLogin(input.Identifier))
 	}
 	if err != nil {
 		//смотрим, что ошибка с ненайденным пользователем
