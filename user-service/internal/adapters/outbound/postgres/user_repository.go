@@ -3,10 +3,12 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"user-service/internal/core/corerrors"
 	"user-service/internal/core/domain"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -33,10 +35,11 @@ func (r PostgresUserRepository) ExistsByEmail(ctx context.Context, email string)
 
 	err := r.pool.QueryRow(ctx, query, email).Scan(&exists)
 	if err != nil {
-		return false, err
-	} else {
-		return exists, nil
+		return false, fmt.Errorf("query user exists by email: %w", err)
 	}
+
+	return exists, nil
+
 }
 
 func (r PostgresUserRepository) Save(ctx context.Context, user domain.User) error {
@@ -47,7 +50,11 @@ func (r PostgresUserRepository) Save(ctx context.Context, user domain.User) erro
 
 	_, err := r.pool.Exec(ctx, query, user.ID, user.Email, user.Login, user.PasswordHash)
 	if err != nil {
-		return err
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return corerrors.ErrUserAlreadyExists
+		}
+		return fmt.Errorf("insert user: %w", err)
 	}
 	return nil
 }
