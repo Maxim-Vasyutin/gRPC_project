@@ -22,6 +22,7 @@ func newGRPCServer(uc useCases, logger *zap.Logger) (*grpc.Server, error) {
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
+			grpcadapter.RecoveryInterceptor(logger),
 			grpcadapter.ValidationInterceptor(v),
 		),
 	)

@@ -8,7 +8,6 @@ import (
 	userv1 "contracts/generated/user/v1"
 	"errors"
 	"user-service/internal/core/corerrors"
-	"user-service/internal/core/dto"
 	"user-service/internal/core/ports/inbound"
 
 	"go.uber.org/zap"
@@ -45,11 +44,7 @@ func NewServer(
 }
 
 func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*userv1.RegisterResponse, error) {
-	input := dto.RegisterInput{
-		Email:    req.Email,
-		Login:    req.Login,
-		Password: req.Password,
-	}
+	input := toRegisterInput(req)
 
 	output, err := s.register.Register(ctx, input)
 	if err != nil {
@@ -59,16 +54,18 @@ func (s *Server) Register(ctx context.Context, req *userv1.RegisterRequest) (*us
 		s.logger.Error("register failed", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	return &userv1.RegisterResponse{
-		UserId: output.UserID,
-	}, nil
+
+	return toRegisterResponse(output), nil
 }
 
 func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.LoginResponse, error) {
-	input := dto.LoginInput{
-		Identifier: req.LoginOrEmail,
-		Password:   req.Password,
-	}
+	//input := dto.LoginInput{
+	//	Identifier: req.LoginOrEmail,
+	//	Password:   req.Password,
+	//}
+	panic("test")
+
+	input := toLoginInput(req)
 
 	output, err := s.login.Login(ctx, input)
 	if err != nil {
@@ -79,18 +76,18 @@ func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.L
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &userv1.LoginResponse{
-		AccessToken:      output.AccessToken,
-		RefreshToken:     output.RefreshToken,
-		AccessExpiresIn:  int64(output.AccessExpiresIn.Seconds()),
-		RefreshExpiresIn: int64(output.RefreshExpiresIn.Seconds()),
-	}, nil
+	// return &userv1.LoginResponse{
+	// 	AccessToken:      output.AccessToken,
+	// 	RefreshToken:     output.RefreshToken,
+	// 	AccessExpiresIn:  int64(output.AccessExpiresIn.Seconds()),
+	// 	RefreshExpiresIn: int64(output.RefreshExpiresIn.Seconds()),
+	// }, nil
+
+	return toLoginResponse(output), nil
 }
 
 func (s *Server) Refresh(ctx context.Context, req *userv1.RefreshRequest) (*userv1.RefreshResponse, error) {
-	input := dto.RefreshInput{
-		RefreshToken: req.RefreshToken,
-	}
+	input := toRefreshInput(req)
 
 	output, err := s.refresh.Refresh(ctx, input)
 	if err != nil {
@@ -101,18 +98,15 @@ func (s *Server) Refresh(ctx context.Context, req *userv1.RefreshRequest) (*user
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &userv1.RefreshResponse{
-		AccessToken:      output.AccessToken,
-		RefreshToken:     output.RefreshToken,
-		AccessExpiresIn:  int64(output.AccessExpiresIn.Seconds()),
-		RefreshExpiresIn: int64(output.RefreshExpiresIn.Seconds()),
-	}, nil
+	return toRefreshResponse(output), nil
 }
 
 func (s *Server) Logout(ctx context.Context, req *userv1.LogoutRequest) (*emptypb.Empty, error) {
-	input := dto.LogoutInput{
-		RefreshToken: req.RefreshToken,
-	}
+	//input := dto.LogoutInput{
+	//	RefreshToken: req.RefreshToken,
+	//}
+
+	input := toLogoutInput(req)
 
 	err := s.logout.Logout(ctx, input)
 	if err != nil {
