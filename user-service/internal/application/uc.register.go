@@ -14,17 +14,23 @@ type RegisterUseCase struct {
 	repo        outbound.RegisterUserRepository
 	hasher      outbound.PasswordHasher
 	idGenerator outbound.IDGenerator
+	session     *SessionIssuer
 }
 
-func NewRegisterUseCase(repo outbound.RegisterUserRepository, hash outbound.PasswordHasher, id outbound.IDGenerator) *RegisterUseCase {
+func NewRegisterUseCase(
+	repo outbound.RegisterUserRepository,
+	hash outbound.PasswordHasher,
+	id outbound.IDGenerator,
+	session *SessionIssuer) *RegisterUseCase {
 	return &RegisterUseCase{
 		repo:        repo,
 		hasher:      hash,
 		idGenerator: id,
+		session:     session,
 	}
 }
 
-func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput) (dto.RegisterOutput, error) {
+func (uc *RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput) (dto.RegisterOutput, error) {
 
 	// В коре написал метод приведения к одному регистру для почты
 	emailLower := domain.NormalizeEmail(input.Email)
@@ -56,5 +62,10 @@ func (uc RegisterUseCase) Register(ctx context.Context, input dto.RegisterInput)
 		return dto.RegisterOutput{}, fmt.Errorf("save user: %w", err)
 	}
 
-	return dto.RegisterOutput{UserID: id}, nil
+	issued, err := uc.session.IssueSession(ctx, user.ID)
+	if err != nil {
+		return dto.RegisterOutput{}, fmt.Errorf("issue session: %w", err)
+	}
+
+	return dto.RegisterOutput{UserID: id, Session: issued}, nil
 }

@@ -63,8 +63,6 @@ func (s *Server) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.L
 	//	Identifier: req.LoginOrEmail,
 	//	Password:   req.Password,
 	//}
-	panic("test")
-
 	input := toLoginInput(req)
 
 	output, err := s.login.Login(ctx, input)

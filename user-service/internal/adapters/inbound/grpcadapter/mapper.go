@@ -35,7 +35,11 @@ func toRegisterInput(req *userv1.RegisterRequest) dto.RegisterInput {
 
 func toRegisterResponse(output dto.RegisterOutput) *userv1.RegisterResponse {
 	return &userv1.RegisterResponse{
-		UserId: output.UserID,
+		UserId:           output.UserID,
+		AccessToken:      output.Session.AccessToken,
+		RefreshToken:     output.Session.RefreshToken,
+		AccessExpiresIn:  int64(output.Session.AccessExpiresIn.Seconds()),
+		RefreshExpiresIn: int64(output.Session.RefreshExpiresIn.Seconds()),
 	}
 }
 

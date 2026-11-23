@@ -31,6 +31,12 @@ message RegisterRequest {
 }
 message RegisterResponse {
   string user_id = 1 [(buf.validate.field).string.uuid = true];
+
+  string access_token = 2 [(buf.validate.field).string.min_len = 8];
+  string refresh_token = 3 [(buf.validate.field).string.min_len = 8];
+  // Время жизни токенов в секундах, считая от момента выдачи.
+  int64 access_expires_in = 4 [(buf.validate.field).int64.gt = 0];
+  int64 refresh_expires_in = 5 [(buf.validate.field).int64.gt = 0];
 }
 //
 
@@ -41,8 +47,8 @@ message LoginRequest {
     (buf.validate.field).string.min_len = 3,
     (buf.validate.field).string.max_len = 254,
     (buf.validate.field).cel = {
-      id: "login_or_email.format",
-      message: "must be a valid email or a login (letters, digits, underscore; starts with a letter)",
+      id: "login_or_email.format"
+      message: "must be a valid email or a login (letters, digits, underscore; starts with a letter)"
       expression: "this.isEmail() || this.matches('^[a-zA-Z][a-zA-Z0-9_]*$')"
     }
   ];

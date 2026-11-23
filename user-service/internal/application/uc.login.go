@@ -14,20 +14,16 @@ import (
 )
 
 type LoginUseCase struct {
-	repo        outbound.LoginUserRepository
-	hasher      outbound.PasswordHasher
-	tokenIssuer outbound.TokenIssuer
-	sessionRepo outbound.SessionRepository
-	dummyHash   string
-	refreshTTL  time.Duration
+	repo      outbound.LoginUserRepository
+	hasher    outbound.PasswordHasher
+	dummyHash string
+	session   *SessionIssuer
 }
 
 func NewLoginUseCase(
 	repo outbound.LoginUserRepository,
 	hasher outbound.PasswordHasher,
-	tokenIssuer outbound.TokenIssuer,
-	sessionRepo outbound.SessionRepository,
-	refreshTTL time.Duration,
+	sessions *SessionIssuer,
 ) (*LoginUseCase, error) {
 	dummyHash, err := hasher.Hash("dummy-password")
 	if err != nil {
@@ -35,12 +31,10 @@ func NewLoginUseCase(
 	}
 
 	return &LoginUseCase{
-		repo:        repo,
-		hasher:      hasher,
-		tokenIssuer: tokenIssuer,
-		sessionRepo: sessionRepo,
-		dummyHash:   dummyHash,
-		refreshTTL:  refreshTTL,
+		repo:      repo,
+		hasher:    hasher,
+		dummyHash: dummyHash,
+		session:   sessions,
 	}, nil
 }
 
@@ -73,29 +67,35 @@ func (uc *LoginUseCase) Login(ctx context.Context, input dto.LoginInput) (dto.Lo
 		return dto.LoginOutput{}, corerrors.ErrInvalidCredentials
 	}
 
-	//Присваивание токена сессии и рефреш-токена
-	tokens, err := uc.tokenIssuer.Issue(user.ID)
+	issued, err := uc.session.IssueSession(ctx, user.ID)
 	if err != nil {
-		return dto.LoginOutput{}, fmt.Errorf("issue tokens: %w", err)
-	}
-
-	//создание сессии
-	session := domain.Session{
-		UserID:       user.ID,
-		RefreshToken: tokens.RefreshToken,
-		ExpiresAt:    time.Now().Add(uc.refreshTTL),
-	}
-
-	//Сохраняем сессию
-	err = uc.sessionRepo.Store(ctx, session)
-	if err != nil {
-		return dto.LoginOutput{}, fmt.Errorf("store session: %w", err)
+		return dto.LoginOutput{}, fmt.Errorf("issue session: %w", err)
 	}
 
 	return dto.LoginOutput{
-		AccessToken:      tokens.AccessToken,
-		RefreshToken:     tokens.RefreshToken,
-		AccessExpiresIn:  tokens.AccessTTL,
-		RefreshExpiresIn: uc.refreshTTL,
+		AccessToken:      issued.AccessToken,
+		RefreshToken:     issued.RefreshToken,
+		AccessExpiresIn:  issued.AccessExpiresIn,
+		RefreshExpiresIn: issued.RefreshExpiresIn,
 	}, nil
+}
+
+type SessionIssuer struct {
+	tokenIssuer outbound.TokenIssuer
+	sessionRepo outbound.SessionRepository
+	refreshTTL  time.Duration
+}
+
+func NewSessionIssuer(
+	tokenIssuer outbound.TokenIssuer,
+	sessionRepo outbound.SessionRepository,
+	refreshTTL time.Duration,
+) *SessionIssuer {
+
+	return &SessionIssuer{
+		tokenIssuer: tokenIssuer,
+		sessionRepo: sessionRepo,
+		refreshTTL:  refreshTTL,
+	}
+
 }

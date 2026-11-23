@@ -9,7 +9,7 @@ import (
 	"user-service/internal/core/dto"
 )
 
-type 	fakeUserRepository struct {
+type fakeUserRepository struct {
 	existsErr  error
 	saveCalled bool
 }
@@ -33,7 +33,7 @@ func TestRegister_RepositoryCheckError(t *testing.T) {
 	idGenerator := &fakeIDGenerator{}
 
 	//act -
-	useCase := NewRegisterUseCase(repo, hasher, idGenerator)
+	useCase := NewRegisterUseCase(repo, hasher, idGenerator, nil)
 
 	ctx := context.Background()
 

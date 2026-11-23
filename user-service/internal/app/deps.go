@@ -37,8 +37,9 @@ func newUseCases(pool *pgxpool.Pool, cfg config) (useCases, error) {
 	sessionRepo := postgres.NewPostgresSessionRepository(pool)
 
 	// ── Use cases ───────────────────────────────────────
-	registerUC := application.NewRegisterUseCase(userRepo, pwHasher, idGen)
-	loginUC, err := application.NewLoginUseCase(userRepo, pwHasher, issuer, sessionRepo, cfg.refreshTTL)
+	sessions := application.NewSessionIssuer(issuer, sessionRepo, cfg.refreshTTL)
+	registerUC := application.NewRegisterUseCase(userRepo, pwHasher, idGen, sessions)
+	loginUC, err := application.NewLoginUseCase(userRepo, pwHasher, sessions)
 	if err != nil {
 		return useCases{}, fmt.Errorf("new login use cases: %w", err)
 	}

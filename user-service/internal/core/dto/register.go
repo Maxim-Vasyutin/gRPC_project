@@ -8,4 +8,5 @@ type RegisterInput struct {
 
 type RegisterOutput struct {
 	UserID string
+	Session IssuedSession
 }

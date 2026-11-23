@@ -23,7 +23,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Register
+//Register
 type RegisterRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Email    string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -87,10 +87,15 @@ func (x *RegisterRequest) GetLogin() string {
 }
 
 type RegisterResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	UserId       string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	AccessToken  string                 `protobuf:"bytes,2,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	RefreshToken string                 `protobuf:"bytes,3,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	// Время жизни токенов в секундах, считая от момента выдачи.
+	AccessExpiresIn  int64 `protobuf:"varint,4,opt,name=access_expires_in,json=accessExpiresIn,proto3" json:"access_expires_in,omitempty"`
+	RefreshExpiresIn int64 `protobuf:"varint,5,opt,name=refresh_expires_in,json=refreshExpiresIn,proto3" json:"refresh_expires_in,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *RegisterResponse) Reset() {
@@ -130,7 +135,35 @@ func (x *RegisterResponse) GetUserId() string {
 	return ""
 }
 
-// Login
+func (x *RegisterResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *RegisterResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *RegisterResponse) GetAccessExpiresIn() int64 {
+	if x != nil {
+		return x.AccessExpiresIn
+	}
+	return 0
+}
+
+func (x *RegisterResponse) GetRefreshExpiresIn() int64 {
+	if x != nil {
+		return x.RefreshExpiresIn
+	}
+	return 0
+}
+
+//Login
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Email или логин одним полем (если есть "@" — это email).
@@ -253,7 +286,7 @@ func (x *LoginResponse) GetRefreshExpiresIn() int64 {
 	return 0
 }
 
-// Refresh
+//Refresh
 type RefreshRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -367,7 +400,7 @@ func (x *RefreshResponse) GetRefreshExpiresIn() int64 {
 	return 0
 }
 
-// Logout
+//Logout
 type LogoutRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// проверка на "не пустой" токен
@@ -421,9 +454,13 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x0fRegisterRequest\x12\x1d\n" +
 	"\x05email\x18\x01 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12%\n" +
 	"\bpassword\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\b\x18@R\bpassword\x128\n" +
-	"\x05login\x18\x03 \x01(\tB\"\xbaH\x1fr\x1d\x10\x03\x18 2\x17^[a-zA-Z][a-zA-Z0-9_]*$R\x05login\"5\n" +
+	"\x05login\x18\x03 \x01(\tB\"\xbaH\x1fr\x1d\x10\x03\x18 2\x17^[a-zA-Z][a-zA-Z0-9_]*$R\x05login\"\xfb\x01\n" +
 	"\x10RegisterResponse\x12!\n" +
-	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"\x96\x02\n" +
+	"\auser_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12*\n" +
+	"\faccess_token\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\vaccessToken\x12,\n" +
+	"\rrefresh_token\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\bR\frefreshToken\x123\n" +
+	"\x11access_expires_in\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x0faccessExpiresIn\x125\n" +
+	"\x12refresh_expires_in\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x10refreshExpiresIn\"\x96\x02\n" +
 	"\fLoginRequest\x12\xde\x01\n" +
 	"\x0elogin_or_email\x18\x01 \x01(\tB\xb7\x01\xbaH\xb3\x01\xba\x01\xa8\x01\n" +
 	"\x15login_or_email.format\x12Tmust be a valid email or a login (letters, digits, underscore; starts with a letter)\x1a9this.isEmail() || this.matches('^[a-zA-Z][a-zA-Z0-9_]*$')r\x05\x10\x03\x18\xfe\x01R\floginOrEmail\x12%\n" +
