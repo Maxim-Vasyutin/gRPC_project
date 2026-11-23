@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -8,6 +9,7 @@ import (
 	"user-service/internal/adapters/inbound/grpcadapter"
 
 	"buf.build/go/protovalidate"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -44,13 +46,27 @@ func newGRPCServer(uc useCases, logger *zap.Logger) (*grpc.Server, error) {
 	return grpcServer, nil
 }
 
-// serve занимает порт и блокируется, пока сервер работает.
-func serve(grpcServer *grpc.Server, port string, logger *zap.Logger) error {
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		return fmt.Errorf("listen %s: %w", port, err)
-	}
+func registerServer(lc fx.Lifecycle, srv *grpc.Server, cfg config, logger *zap.Logger) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			lis, err := net.Listen("tcp", cfg.grpcPort)
+			if err != nil {
+				return fmt.Errorf("listen %s: %w", cfg.grpcPort, err)
+			}
 
-	logger.Info("gRPC server listening", zap.String("port", port))
-	return grpcServer.Serve(lis)
+			logger.Info("gRPC server listening", zap.String("port", cfg.grpcPort))
+
+			go func() {
+				err := srv.Serve(lis)
+				if err != nil {
+					logger.Error("service stopped with error", zap.Error(err))
+				}
+			}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			srv.GracefulStop()
+			return nil
+		},
+	})
 }

@@ -18,14 +18,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	runErr := app.Run(logger)
-	if runErr != nil {
-		logger.Error("service stopped with error", zap.Error(runErr))
-	}
-	_ = logger.Sync() // os.Exit не выполняет defer, поэтому Sync вызываем явно
-	if runErr != nil {
-		os.Exit(1)
-	}
+	app.Run(logger)
+	_ = logger.Sync()
 }
 
 func newLogger() (*zap.Logger, error) {
