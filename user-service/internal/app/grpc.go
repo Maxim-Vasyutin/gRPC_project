@@ -7,6 +7,7 @@ import (
 
 	userv1 "contracts/generated/user/v1"
 	"user-service/internal/adapters/inbound/grpcadapter"
+	"user-service/internal/application"
 
 	"buf.build/go/protovalidate"
 	"go.uber.org/fx"
@@ -16,7 +17,12 @@ import (
 )
 
 // newGRPCServer собирает транспортный слой: интерсепторы и хендлеры.
-func newGRPCServer(uc useCases, logger *zap.Logger) (*grpc.Server, error) {
+func newGRPCServer(
+	register *application.RegisterUseCase,
+	login *application.LoginUseCase,
+	refresh *application.RefreshUseCase,
+	logout *application.LogoutUseCase,
+	logger *zap.Logger) (*grpc.Server, error) {
 	v, err := protovalidate.New()
 	if err != nil {
 		return nil, fmt.Errorf("create validator: %w", err)
@@ -35,10 +41,10 @@ func newGRPCServer(uc useCases, logger *zap.Logger) (*grpc.Server, error) {
 	userv1.RegisterUserServiceServer(
 		grpcServer,
 		grpcadapter.NewServer(
-			uc.register,
-			uc.login,
-			uc.refresh,
-			uc.logout,
+			register,
+			login,
+			refresh,
+			logout,
 			logger,
 		),
 	)
